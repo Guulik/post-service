@@ -1,18 +1,9 @@
 scalar Time
 
-type PostGraph {
-    id: ID!
-    createdAt: Time!
-    name: String!
-    author: String!
-    content: String!
-}
-
 type Post {
     id: ID!
     createdAt: Time!
     name: String!
-    author: String!
     content: String!
     commentsAllowed: Boolean!
     comments(page: Int, pageSize: Int):[Comment!]
@@ -26,10 +17,10 @@ input InputPost{
 }
 
 type Query{
-    GetAllPosts(page: Int, pageSize: Int): [PostGraph!]!
+    GetAllPosts(page: Int, pageSize: Int): [Post!]!
     GetPostById(id: Int!): Post!
 }
 
 type Mutation{
-    CreatePost(post: InputPost!):PostGraph!
+    CreatePost(post: InputPost!):Post!
 }

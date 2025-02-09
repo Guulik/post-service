@@ -12,12 +12,17 @@ import (
 )
 
 // CreatePost is the resolver for the CreatePost field.
-func (r *mutationResolver) CreatePost(ctx context.Context, post model.InputPost) (*model.PostGraph, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, post model.InputPost) (*model.Post, error) {
 	panic(fmt.Errorf("not implemented: CreatePost - CreatePost"))
 }
 
+// Comments is the resolver for the comments field.
+func (r *postResolver) Comments(ctx context.Context, obj *model.Post, page *int32, pageSize *int32) ([]*model.Comment, error) {
+	panic(fmt.Errorf("not implemented: Comments - comments"))
+}
+
 // GetAllPosts is the resolver for the GetAllPosts field.
-func (r *queryResolver) GetAllPosts(ctx context.Context, page *int32, pageSize *int32) ([]*model.PostGraph, error) {
+func (r *queryResolver) GetAllPosts(ctx context.Context, page *int32, pageSize *int32) ([]*model.Post, error) {
 	panic(fmt.Errorf("not implemented: GetAllPosts - GetAllPosts"))
 }
 
@@ -29,8 +34,12 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int32) (*model.Post,
 // Mutation returns graph.MutationResolver implementation.
 func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
+// Post returns graph.PostResolver implementation.
+func (r *Resolver) Post() graph.PostResolver { return &postResolver{r} }
+
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+type postResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
