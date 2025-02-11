@@ -15,8 +15,8 @@ func NewPostsPostgres(db *sqlx.DB) *PostsPostgres {
 
 func (p PostsPostgres) CreatePost(post model.Post) (model.Post, error) {
 
-	query := `INSERT INTO Posts (name, content,  comments_allowed) 
-				VALUES ($1, $2, $3, $4)
+	query := `INSERT INTO Posts (name, content, comments_allowed) 
+				VALUES ($1, $2, $3)
 				RETURNING id, created_at`
 
 	tx, err := p.db.Begin()

@@ -21,7 +21,7 @@ func (c CommentsPostgres) CreateComment(comment model.Comment) (model.Comment, e
 	}
 
 	query := `INSERT INTO comments (content, post, reply_to) 
-				VALUES ($1, $2, $3, $4) RETURNING id, created_at`
+				VALUES ($1, $2, $3) RETURNING id, created_at`
 
 	row := tx.QueryRow(query, comment.Content, comment.Post, comment.ReplyTo)
 	if err := row.Scan(&comment.ID, &comment.CreatedAt); err != nil {
