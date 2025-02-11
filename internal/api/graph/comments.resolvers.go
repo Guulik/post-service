@@ -17,7 +17,7 @@ import (
 // CreateComment is the resolver for the CreateComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputComment) (*model.Comment, error) {
 	if input.Post <= 0 {
-		slog.Error(constants.WrongIdError, input.Post)
+		slog.Error(constants.WrongIdError, slog.Int("postId", input.Post))
 		respErr := e.ResponseError{
 			Message: constants.WrongIdError,
 			Type:    constants.BadRequestType,
@@ -28,7 +28,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputC
 	}
 
 	if len(input.Content) >= constants.MaxContentLength {
-		slog.Error(constants.TooLongContentError, len(input.Content))
+		slog.Error(constants.TooLongContentError, slog.Any("comment length", len(input.Content)))
 		err := e.ResponseError{
 			Message: constants.TooLongContentError,
 			Type:    constants.BadRequestType,
@@ -62,12 +62,14 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputC
 	}
 
 	if err = r.CommentsObservers.NotifyObservers(newComment.Post, newComment); err != nil {
-		respErr := e.ResponseError{
-			Message: err.Error(),
-			Type:    constants.InternalErrorType,
-		}
-		return nil, &gqlerror.Error{
-			Extensions: respErr.Extensions(),
+		if err.Error() != constants.ThereIsNoObserversError {
+			respErr := e.ResponseError{
+				Message: err.Error(),
+				Type:    constants.InternalErrorType,
+			}
+			return nil, &gqlerror.Error{
+				Extensions: respErr.Extensions(),
+			}
 		}
 	}
 
@@ -77,7 +79,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputC
 // GetReplies is the resolver for the GetReplies field.
 func (r *queryResolver) GetReplies(ctx context.Context, commentID int) ([]*model.Comment, error) {
 	if commentID <= 0 {
-		slog.Error(constants.WrongIdError, commentID)
+		slog.Error(constants.WrongIdError, slog.Int("commentId", commentID))
 		respErr := e.ResponseError{
 			Message: constants.WrongIdError,
 			Type:    constants.BadRequestType,
@@ -103,7 +105,7 @@ func (r *queryResolver) GetReplies(ctx context.Context, commentID int) ([]*model
 // CommentsSubscription is the resolver for the CommentsSubscription field.
 func (r *subscriptionResolver) CommentsSubscription(ctx context.Context, postID int) (<-chan *model.Comment, error) {
 	if postID <= 0 {
-		slog.Error(constants.WrongIdError, postID)
+		slog.Error(constants.WrongIdError, slog.Int("postId", postID))
 		respErr := e.ResponseError{
 			Message: constants.WrongIdError,
 			Type:    constants.BadRequestType,

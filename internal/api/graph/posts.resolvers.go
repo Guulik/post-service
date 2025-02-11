@@ -47,7 +47,7 @@ func (r *postResolver) Comments(ctx context.Context, obj *model.Post, page *int,
 	}
 
 	if obj.ID <= 0 {
-		slog.Error(constants.WrongIdError, obj.ID)
+		slog.Error(constants.WrongIdError, slog.Int("postId", obj.ID))
 		respErr := e.ResponseError{
 			Message: constants.WrongIdError,
 			Type:    constants.BadRequestType,
@@ -102,7 +102,7 @@ func (r *queryResolver) GetAllPosts(ctx context.Context, page *int, pageSize *in
 // GetPostByID is the resolver for the GetPostById field.
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, error) {
 	if id <= 0 {
-		slog.Error(constants.WrongIdError, id)
+		slog.Error(constants.WrongIdError, slog.Int("postId", id))
 		respErr := e.ResponseError{
 			Message: constants.WrongIdError,
 			Type:    constants.BadRequestType,

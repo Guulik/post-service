@@ -28,7 +28,7 @@ func (p PostsService) CreatePost(ctx context.Context, post model.Post) (model.Po
 
 	newPost, err := p.repo.CreatePost(post)
 	if err != nil {
-		log.Error(constants.CreatingPostError, err.Error())
+		log.Error(constants.CreatingPostError, slog.String("err:", err.Error()))
 		return model.Post{}, fmt.Errorf("%s: %w", constants.CreatingPostError, err)
 	}
 
@@ -44,7 +44,7 @@ func (p PostsService) GetPostById(ctx context.Context, postId int) (model.Post, 
 
 	post, err := p.repo.GetPostById(postId)
 	if err != nil {
-		log.Error(constants.GetPostError, err.Error())
+		log.Error(constants.GetPostError, slog.String("err:", err.Error()))
 		if errors.Is(err, sql.ErrNoRows) {
 			return model.Post{}, fmt.Errorf("%s, postId=%d: %w", constants.PostNotFoundError, postId, err)
 		}
@@ -62,7 +62,7 @@ func (p PostsService) GetAllPosts(ctx context.Context, limit, offset int) ([]*mo
 
 	posts, err := p.repo.GetAllPosts(limit, offset)
 	if err != nil {
-		log.Error(constants.GetPostError, err.Error())
+		log.Error(constants.GetPostError, slog.String("err:", err.Error()))
 		return nil, fmt.Errorf("%s: %w", constants.GetPostError, err)
 	}
 

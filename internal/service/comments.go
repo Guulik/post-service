@@ -36,7 +36,7 @@ func (c CommentsService) CreateComment(ctx context.Context, comment model.Commen
 
 	post, err := c.PostGetter.GetPostById(comment.Post)
 	if err != nil {
-		log.Error(constants.PostNotFoundError, err.Error())
+		log.Error(constants.PostNotFoundError, slog.String("err:", err.Error()))
 		if errors.Is(err, sql.ErrNoRows) {
 			return model.Comment{}, fmt.Errorf("%s: %w", constants.PostNotFoundError, err)
 		}
@@ -49,7 +49,7 @@ func (c CommentsService) CreateComment(ctx context.Context, comment model.Commen
 
 	newComment, err := c.repo.CreateComment(comment)
 	if err != nil {
-		log.Error(constants.CreatingCommentError, err.Error())
+		log.Error(constants.CreatingCommentError, slog.String("err:", err.Error()))
 		return model.Comment{}, fmt.Errorf("%s: %w", constants.CreatingCommentError, err)
 	}
 
@@ -79,7 +79,7 @@ func (c CommentsService) GetRepliesOfComment(ctx context.Context, commentId int)
 
 	comments, err := c.repo.GetRepliesOfComment(commentId)
 	if err != nil {
-		log.Error(constants.GettingRepliesError, commentId)
+		log.Error(constants.GettingRepliesError, slog.Any("commentId", commentId))
 		return nil, fmt.Errorf("%s, commentId=%d: %w", constants.GettingRepliesError, commentId, err)
 	}
 
