@@ -1,17 +1,23 @@
 package pagination
 
-func GetLimitAndOffset(page, pageSize *int) (int, int) {
+import (
+	"errors"
+	"posts/internal/constants"
+)
+
+func GetLimitAndOffset(page, pageSize *int) (int, int, error) {
 	var (
 		limit  int
 		offset int
+		err    error
 	)
 
 	if page != nil && *page <= 0 {
-		page = nil
+		err = errors.New(constants.WrongPageError)
 	}
 
 	if pageSize != nil && *pageSize < 0 {
-		pageSize = nil
+		err = errors.New(constants.WrongPageSizeError)
 	}
 
 	if page == nil || pageSize == nil {
@@ -21,5 +27,5 @@ func GetLimitAndOffset(page, pageSize *int) (int, int) {
 		offset = (*page - 1) * *pageSize
 		limit = *pageSize
 	}
-	return limit, offset
+	return limit, offset, err
 }

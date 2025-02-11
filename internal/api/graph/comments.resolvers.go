@@ -6,19 +6,69 @@ package graph
 
 import (
 	"context"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"log/slog"
 	"posts/graph"
+	"posts/internal/constants"
+	e "posts/internal/lib/response_error"
 	"posts/internal/model"
 )
 
 // CreateComment is the resolver for the CreateComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputComment) (*model.Comment, error) {
+	if input.Post <= 0 {
+		slog.Error(constants.WrongIdError, input.Post)
+		respErr := e.ResponseError{
+			Message: constants.WrongIdError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
+
+	if len(input.Content) >= constants.MaxContentLength {
+		slog.Error(constants.TooLongContentError, len(input.Content))
+		err := e.ResponseError{
+			Message: constants.TooLongContentError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: err.Extensions(),
+		}
+	}
 	newComment, err := r.CommentsService.CreateComment(ctx, input.FromInput())
 	if err != nil {
-		//TODO: handle Error
+		var respErr e.ResponseError
+		respErr = e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		if err.Error() == constants.CommentsNotAllowedError {
+			respErr = e.ResponseError{
+				Message: err.Error(),
+				Type:    constants.BadRequestType,
+			}
+		}
+		if err.Error() == constants.PostNotFoundError {
+			respErr = e.ResponseError{
+				Message: err.Error(),
+				Type:    constants.NotFoundType,
+			}
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	if err = r.CommentsObservers.NotifyObservers(newComment.Post, newComment); err != nil {
-		//TODO: handle Error
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return &newComment, nil
@@ -26,9 +76,25 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.InputC
 
 // GetReplies is the resolver for the GetReplies field.
 func (r *queryResolver) GetReplies(ctx context.Context, commentID int) ([]*model.Comment, error) {
+	if commentID <= 0 {
+		slog.Error(constants.WrongIdError, commentID)
+		respErr := e.ResponseError{
+			Message: constants.WrongIdError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
 	comments, err := r.CommentsService.GetRepliesOfComment(ctx, commentID)
 	if err != nil {
-		//TODO: handle error
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return comments, nil
@@ -36,17 +102,34 @@ func (r *queryResolver) GetReplies(ctx context.Context, commentID int) ([]*model
 
 // CommentsSubscription is the resolver for the CommentsSubscription field.
 func (r *subscriptionResolver) CommentsSubscription(ctx context.Context, postID int) (<-chan *model.Comment, error) {
+	if postID <= 0 {
+		slog.Error(constants.WrongIdError, postID)
+		respErr := e.ResponseError{
+			Message: constants.WrongIdError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
 	id, ch, err := r.CommentsObservers.CreateObserver(postID)
 
 	if err != nil {
-		//TODO: handle error
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	go func() {
 		<-ctx.Done()
 		err = r.CommentsObservers.DeleteObserver(id, postID)
 		if err != nil {
-			// TODO: error log
+			slog.Error("failed to Delete observer")
+			return
 		}
 	}()
 

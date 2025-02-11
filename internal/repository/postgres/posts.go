@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"github.com/jmoiron/sqlx"
 	"posts/internal/model"
 )
@@ -14,7 +13,7 @@ func NewPostsPostgres(db *sqlx.DB) *PostsPostgres {
 	return &PostsPostgres{db: db}
 }
 
-func (p PostsPostgres) CreatePost(ctx context.Context, post model.Post) (model.Post, error) {
+func (p PostsPostgres) CreatePost(post model.Post) (model.Post, error) {
 
 	query := `INSERT INTO Posts (name, content,  comments_allowed) 
 				VALUES ($1, $2, $3, $4)
@@ -34,7 +33,7 @@ func (p PostsPostgres) CreatePost(ctx context.Context, post model.Post) (model.P
 	return post, tx.Commit()
 }
 
-func (p PostsPostgres) GetPostById(ctx context.Context, id int) (model.Post, error) {
+func (p PostsPostgres) GetPostById(id int) (model.Post, error) {
 
 	query := `SELECT * FROM posts WHERE id = $1`
 
@@ -47,7 +46,7 @@ func (p PostsPostgres) GetPostById(ctx context.Context, id int) (model.Post, err
 	return post, nil
 }
 
-func (p PostsPostgres) GetAllPosts(ctx context.Context, limit, offset int) ([]*model.Post, error) {
+func (p PostsPostgres) GetAllPosts(limit, offset int) ([]*model.Post, error) {
 
 	query := "SELECT * FROM posts ORDER BY created_at OFFSET $1"
 	args := []interface{}{offset}

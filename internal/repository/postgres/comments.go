@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"github.com/jmoiron/sqlx"
 	"posts/internal/model"
 )
@@ -14,7 +13,7 @@ func NewCommentsPostgres(db *sqlx.DB) *CommentsPostgres {
 	return &CommentsPostgres{db: db}
 }
 
-func (c CommentsPostgres) CreateComment(ctx context.Context, comment model.Comment) (model.Comment, error) {
+func (c CommentsPostgres) CreateComment(comment model.Comment) (model.Comment, error) {
 
 	tx, err := c.db.Begin()
 	if err != nil {
@@ -34,7 +33,7 @@ func (c CommentsPostgres) CreateComment(ctx context.Context, comment model.Comme
 
 }
 
-func (c CommentsPostgres) GetCommentsByPost(ctx context.Context, postId, limit, offset int) ([]*model.Comment, error) {
+func (c CommentsPostgres) GetCommentsByPost(postId, limit, offset int) ([]*model.Comment, error) {
 
 	query := `SELECT * FROM comments 
          WHERE post = $1 AND reply_to IS NULL 
@@ -57,7 +56,7 @@ func (c CommentsPostgres) GetCommentsByPost(ctx context.Context, postId, limit, 
 	return comments, nil
 }
 
-func (c CommentsPostgres) GetRepliesOfComment(ctx context.Context, commentId int) ([]*model.Comment, error) {
+func (c CommentsPostgres) GetRepliesOfComment(commentId int) ([]*model.Comment, error) {
 	query := `SELECT * FROM comments WHERE reply_to = $1`
 
 	var comments []*model.Comment

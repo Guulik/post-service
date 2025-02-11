@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"posts/internal/model"
 	"posts/internal/repository"
 )
@@ -9,12 +10,14 @@ import (
 type Services struct {
 	Posts
 	Comments
+	log *slog.Logger
 }
 
-func NewServices(repo *repository.Repo) *Services {
+func NewServices(repo *repository.Repo, log *slog.Logger) *Services {
 	return &Services{
-		Posts:    NewPostsService(repo.Posts),
-		Comments: NewCommentsService(repo.Comments, repo.Posts),
+		Posts:    NewPostsService(repo.RepoPosts, log),
+		Comments: NewCommentsService(repo.RepoComments, repo.RepoPosts, log),
+		log:      log,
 	}
 }
 

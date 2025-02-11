@@ -6,8 +6,12 @@ package graph
 
 import (
 	"context"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"log/slog"
 	"posts/graph"
+	"posts/internal/constants"
 	"posts/internal/lib/pagination"
+	e "posts/internal/lib/response_error"
 	"posts/internal/model"
 )
 
@@ -15,7 +19,14 @@ import (
 func (r *mutationResolver) CreatePost(ctx context.Context, post model.InputPost) (*model.Post, error) {
 	newPost, err := r.PostsService.CreatePost(ctx, post.FromInput())
 	if err != nil {
-		//TODO: handle error
+		slog.Error(constants.CreatingPostError)
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return &newPost, nil
@@ -23,11 +34,38 @@ func (r *mutationResolver) CreatePost(ctx context.Context, post model.InputPost)
 
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *model.Post, page *int, pageSize *int) ([]*model.Comment, error) {
-	limit, offset := pagination.GetLimitAndOffset(page, pageSize)
+	limit, offset, err := pagination.GetLimitAndOffset(page, pageSize)
+	if err != nil {
+		slog.Error(constants.WrongPageError)
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
+
+	if obj.ID <= 0 {
+		slog.Error(constants.WrongIdError, obj.ID)
+		respErr := e.ResponseError{
+			Message: constants.WrongIdError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
 
 	comments, err := r.CommentsService.GetCommentsByPost(ctx, obj.ID, limit, offset)
 	if err != nil {
-		//TODO: handle error
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return comments, nil
@@ -36,11 +74,26 @@ func (r *postResolver) Comments(ctx context.Context, obj *model.Post, page *int,
 // GetAllPosts is the resolver for the GetAllPosts field.
 func (r *queryResolver) GetAllPosts(ctx context.Context, page *int, pageSize *int) ([]*model.Post, error) {
 
-	limit, offset := pagination.GetLimitAndOffset(page, pageSize)
+	limit, offset, err := pagination.GetLimitAndOffset(page, pageSize)
+	if err != nil {
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
 
 	posts, err := r.PostsService.GetAllPosts(ctx, limit, offset)
 	if err != nil {
-		//TODO: handle error
+		respErr := e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return posts, nil
@@ -48,9 +101,33 @@ func (r *queryResolver) GetAllPosts(ctx context.Context, page *int, pageSize *in
 
 // GetPostByID is the resolver for the GetPostById field.
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, error) {
+	if id <= 0 {
+		slog.Error(constants.WrongIdError, id)
+		respErr := e.ResponseError{
+			Message: constants.WrongIdError,
+			Type:    constants.BadRequestType,
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
+	}
+
 	post, err := r.PostsService.GetPostById(ctx, id)
 	if err != nil {
-		//TODO: handle error
+		var respErr e.ResponseError
+		respErr = e.ResponseError{
+			Message: err.Error(),
+			Type:    constants.InternalErrorType,
+		}
+		if err.Error() == constants.NotFoundType {
+			respErr = e.ResponseError{
+				Message: err.Error(),
+				Type:    constants.NotFoundType,
+			}
+		}
+		return nil, &gqlerror.Error{
+			Extensions: respErr.Extensions(),
+		}
 	}
 
 	return &post, nil

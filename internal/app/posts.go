@@ -7,7 +7,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/jmoiron/sqlx"
+	"log/slog"
 	"net/http"
+	"os"
 	"posts/configure"
 	"posts/graph"
 	ql "posts/internal/api/graph"
@@ -16,6 +18,11 @@ import (
 	in_memory "posts/internal/repository/in-memory"
 	"posts/internal/repository/postgres"
 	"posts/internal/service"
+)
+
+const (
+	envLocal = "local"
+	envStage = "stage"
 )
 
 type App struct {
@@ -43,6 +50,8 @@ func New() *App {
 	app := &App{}
 
 	cfg := configure.MustLoadConfig()
+	log := setupLogger(cfg.Env)
+
 	app.cfg = cfg
 
 	if cfg.InMemory {
@@ -61,7 +70,7 @@ func New() *App {
 		}
 	}
 
-	app.svc = service.NewServices(app.repo)
+	app.svc = service.NewServices(app.repo, log)
 
 	app.server = &http.Server{
 		Addr:    ":8080",
@@ -95,4 +104,20 @@ func (a *App) Stop(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+
+	switch env {
+	case envLocal:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
+	case envStage:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	}
+	return log
 }

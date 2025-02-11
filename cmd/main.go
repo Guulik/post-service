@@ -12,7 +12,6 @@ import (
 func main() {
 
 	ctx := context.Background()
-	//setupLogger(cfg.Env)
 
 	a := app.New()
 

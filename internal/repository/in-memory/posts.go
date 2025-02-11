@@ -1,7 +1,6 @@
 package in_memory
 
 import (
-	"context"
 	"database/sql"
 	"posts/internal/model"
 	"sync"
@@ -20,7 +19,7 @@ func NewPostsInMemory(count int) *PostsInMemory {
 	}
 }
 
-func (p *PostsInMemory) CreatePost(ctx context.Context, post model.Post) (model.Post, error) {
+func (p *PostsInMemory) CreatePost(post model.Post) (model.Post, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -32,7 +31,7 @@ func (p *PostsInMemory) CreatePost(ctx context.Context, post model.Post) (model.
 	return post, nil
 }
 
-func (p *PostsInMemory) GetPostById(ctx context.Context, id int) (model.Post, error) {
+func (p *PostsInMemory) GetPostById(id int) (model.Post, error) {
 
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -44,7 +43,7 @@ func (p *PostsInMemory) GetPostById(ctx context.Context, id int) (model.Post, er
 	return *p.posts[id-1], nil
 }
 
-func (p *PostsInMemory) GetAllPosts(ctx context.Context, limit, offset int) ([]*model.Post, error) {
+func (p *PostsInMemory) GetAllPosts(limit, offset int) ([]*model.Post, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
