@@ -9,3 +9,11 @@ type Post struct {
 	Content         string    `json:"content" db:"content"`
 	CommentsAllowed bool      `json:"commentsAllowed" db:"comments_allowed"`
 }
+
+func (p InputPost) FromInput() Post {
+	return Post{
+		Name:            p.Name,
+		Content:         p.Content,
+		CommentsAllowed: p.CommentsAllowed,
+	}
+}

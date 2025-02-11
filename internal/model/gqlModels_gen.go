@@ -3,15 +3,14 @@
 package model
 
 type InputComment struct {
-	Content string  `json:"content"`
-	Post    string  `json:"post"`
-	ReplyTo *string `json:"replyTo,omitempty"`
+	Content string `json:"content"`
+	Post    int    `json:"post"`
+	ReplyTo *int   `json:"replyTo,omitempty"`
 }
 
 type InputPost struct {
 	Name            string `json:"name"`
 	Content         string `json:"content"`
-	Author          string `json:"author"`
 	CommentsAllowed bool   `json:"commentsAllowed"`
 }
 

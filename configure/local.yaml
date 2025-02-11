@@ -1,4 +1,6 @@
 env: "local"
+IN_MEMORY: true
+
 port: 8080
 timeout: 1m
 postgres:

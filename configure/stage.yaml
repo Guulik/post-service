@@ -1,4 +1,6 @@
 env: "stage"
+IN_MEMORY: false
+
 port: 8080
 timeout: 1m
 postgres:

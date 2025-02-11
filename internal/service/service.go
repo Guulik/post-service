@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"posts/internal/model"
 	"posts/internal/repository"
 )
@@ -18,13 +19,13 @@ func NewServices(repo *repository.Repo) *Services {
 }
 
 type Posts interface {
-	CreatePost(post model.Post) (model.Post, error)
-	GetPostById(id int) (model.Post, error)
-	GetAllPosts(page, pageSize *int) ([]model.Post, error)
+	CreatePost(ctx context.Context, post model.Post) (model.Post, error)
+	GetPostById(ctx context.Context, id int) (model.Post, error)
+	GetAllPosts(ctx context.Context, limit int, offset int) ([]*model.Post, error)
 }
 
 type Comments interface {
-	CreateComment(comment model.Comment) (model.Comment, error)
-	GetCommentsByPost(postId int, page *int, pageSize *int) ([]*model.Comment, error)
-	GetRepliesOfComment(commentId int, depth int32) ([]*model.Comment, error)
+	CreateComment(ctx context.Context, comment model.Comment) (model.Comment, error)
+	GetCommentsByPost(ctx context.Context, postId int, limit int, offset int) ([]*model.Comment, error)
+	GetRepliesOfComment(ctx context.Context, commentId int) ([]*model.Comment, error)
 }

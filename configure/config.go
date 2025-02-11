@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Env      string        `yaml:"env"`
+	InMemory bool          `yaml:"IN_MEMORY"`
 	Port     int           `yaml:"port"`
 	Timeout  time.Duration `yaml:"timeout"`
 	Postgres Postgres

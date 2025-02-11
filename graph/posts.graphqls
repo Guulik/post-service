@@ -12,7 +12,6 @@ type Post {
 input InputPost{
     name: String!
     content: String!
-    author: String!
     commentsAllowed: Boolean!
 }
 

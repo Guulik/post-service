@@ -65,7 +65,7 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		Comments        func(childComplexity int, page *int32, pageSize *int32) int
+		Comments        func(childComplexity int, page *int, pageSize *int) int
 		CommentsAllowed func(childComplexity int) int
 		Content         func(childComplexity int) int
 		CreatedAt       func(childComplexity int) int
@@ -74,13 +74,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAllPosts func(childComplexity int, page *int32, pageSize *int32) int
-		GetPostByID func(childComplexity int, id int32) int
-		GetReplies  func(childComplexity int, commentID string, depth int32) int
+		GetAllPosts func(childComplexity int, page *int, pageSize *int) int
+		GetPostByID func(childComplexity int, id int) int
+		GetReplies  func(childComplexity int, commentID int) int
 	}
 
 	Subscription struct {
-		CommentsSubscription func(childComplexity int, postID string) int
+		CommentsSubscription func(childComplexity int, postID int) int
 	}
 }
 
@@ -89,15 +89,15 @@ type MutationResolver interface {
 	CreateComment(ctx context.Context, input model.InputComment) (*model.Comment, error)
 }
 type PostResolver interface {
-	Comments(ctx context.Context, obj *model.Post, page *int32, pageSize *int32) ([]*model.Comment, error)
+	Comments(ctx context.Context, obj *model.Post, page *int, pageSize *int) ([]*model.Comment, error)
 }
 type QueryResolver interface {
-	GetAllPosts(ctx context.Context, page *int32, pageSize *int32) ([]*model.Post, error)
-	GetPostByID(ctx context.Context, id int32) (*model.Post, error)
-	GetReplies(ctx context.Context, commentID string, depth int32) ([]*model.Comment, error)
+	GetAllPosts(ctx context.Context, page *int, pageSize *int) ([]*model.Post, error)
+	GetPostByID(ctx context.Context, id int) (*model.Post, error)
+	GetReplies(ctx context.Context, commentID int) ([]*model.Comment, error)
 }
 type SubscriptionResolver interface {
-	CommentsSubscription(ctx context.Context, postID string) (<-chan *model.Comment, error)
+	CommentsSubscription(ctx context.Context, postID int) (<-chan *model.Comment, error)
 }
 
 type executableSchema struct {
@@ -188,7 +188,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Post.Comments(childComplexity, args["page"].(*int32), args["pageSize"].(*int32)), true
+		return e.complexity.Post.Comments(childComplexity, args["page"].(*int), args["pageSize"].(*int)), true
 
 	case "Post.commentsAllowed":
 		if e.complexity.Post.CommentsAllowed == nil {
@@ -235,7 +235,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAllPosts(childComplexity, args["page"].(*int32), args["pageSize"].(*int32)), true
+		return e.complexity.Query.GetAllPosts(childComplexity, args["page"].(*int), args["pageSize"].(*int)), true
 
 	case "Query.GetPostById":
 		if e.complexity.Query.GetPostByID == nil {
@@ -247,7 +247,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPostByID(childComplexity, args["id"].(int32)), true
+		return e.complexity.Query.GetPostByID(childComplexity, args["id"].(int)), true
 
 	case "Query.GetReplies":
 		if e.complexity.Query.GetReplies == nil {
@@ -259,7 +259,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetReplies(childComplexity, args["commentId"].(string), args["depth"].(int32)), true
+		return e.complexity.Query.GetReplies(childComplexity, args["commentId"].(int)), true
 
 	case "Subscription.CommentsSubscription":
 		if e.complexity.Subscription.CommentsSubscription == nil {
@@ -271,7 +271,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Subscription.CommentsSubscription(childComplexity, args["postId"].(string)), true
+		return e.complexity.Subscription.CommentsSubscription(childComplexity, args["postId"].(int)), true
 
 	}
 	return 0, false
@@ -481,26 +481,26 @@ func (ec *executionContext) field_Post_comments_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Post_comments_argsPage(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*int32, error) {
+) (*int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
 	if tmp, ok := rawArgs["page"]; ok {
-		return ec.unmarshalOInt2ᚖint32(ctx, tmp)
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
 	}
 
-	var zeroVal *int32
+	var zeroVal *int
 	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Post_comments_argsPageSize(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*int32, error) {
+) (*int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
 	if tmp, ok := rawArgs["pageSize"]; ok {
-		return ec.unmarshalOInt2ᚖint32(ctx, tmp)
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
 	}
 
-	var zeroVal *int32
+	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -522,26 +522,26 @@ func (ec *executionContext) field_Query_GetAllPosts_args(ctx context.Context, ra
 func (ec *executionContext) field_Query_GetAllPosts_argsPage(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*int32, error) {
+) (*int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
 	if tmp, ok := rawArgs["page"]; ok {
-		return ec.unmarshalOInt2ᚖint32(ctx, tmp)
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
 	}
 
-	var zeroVal *int32
+	var zeroVal *int
 	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_GetAllPosts_argsPageSize(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*int32, error) {
+) (*int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
 	if tmp, ok := rawArgs["pageSize"]; ok {
-		return ec.unmarshalOInt2ᚖint32(ctx, tmp)
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
 	}
 
-	var zeroVal *int32
+	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -558,13 +558,13 @@ func (ec *executionContext) field_Query_GetPostById_args(ctx context.Context, ra
 func (ec *executionContext) field_Query_GetPostById_argsID(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (int32, error) {
+) (int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNInt2int32(ctx, tmp)
+		return ec.unmarshalNInt2int(ctx, tmp)
 	}
 
-	var zeroVal int32
+	var zeroVal int
 	return zeroVal, nil
 }
 
@@ -576,36 +576,18 @@ func (ec *executionContext) field_Query_GetReplies_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["commentId"] = arg0
-	arg1, err := ec.field_Query_GetReplies_argsDepth(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["depth"] = arg1
 	return args, nil
 }
 func (ec *executionContext) field_Query_GetReplies_argsCommentID(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (string, error) {
+) (int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("commentId"))
 	if tmp, ok := rawArgs["commentId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+		return ec.unmarshalNID2int(ctx, tmp)
 	}
 
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_GetReplies_argsDepth(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (int32, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("depth"))
-	if tmp, ok := rawArgs["depth"]; ok {
-		return ec.unmarshalNInt2int32(ctx, tmp)
-	}
-
-	var zeroVal int32
+	var zeroVal int
 	return zeroVal, nil
 }
 
@@ -645,13 +627,13 @@ func (ec *executionContext) field_Subscription_CommentsSubscription_args(ctx con
 func (ec *executionContext) field_Subscription_CommentsSubscription_argsPostID(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (string, error) {
+) (int, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
 	if tmp, ok := rawArgs["postId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+		return ec.unmarshalNID2int(ctx, tmp)
 	}
 
-	var zeroVal string
+	var zeroVal int
 	return zeroVal, nil
 }
 
@@ -1342,7 +1324,7 @@ func (ec *executionContext) _Post_comments(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Post().Comments(rctx, obj, fc.Args["page"].(*int32), fc.Args["pageSize"].(*int32))
+		return ec.resolvers.Post().Comments(rctx, obj, fc.Args["page"].(*int), fc.Args["pageSize"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1406,7 +1388,7 @@ func (ec *executionContext) _Query_GetAllPosts(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllPosts(rctx, fc.Args["page"].(*int32), fc.Args["pageSize"].(*int32))
+		return ec.resolvers.Query().GetAllPosts(rctx, fc.Args["page"].(*int), fc.Args["pageSize"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1475,7 +1457,7 @@ func (ec *executionContext) _Query_GetPostById(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPostByID(rctx, fc.Args["id"].(int32))
+		return ec.resolvers.Query().GetPostByID(rctx, fc.Args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1544,7 +1526,7 @@ func (ec *executionContext) _Query_GetReplies(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReplies(rctx, fc.Args["commentId"].(string), fc.Args["depth"].(int32))
+		return ec.resolvers.Query().GetReplies(rctx, fc.Args["commentId"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1739,7 +1721,7 @@ func (ec *executionContext) _Subscription_CommentsSubscription(ctx context.Conte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().CommentsSubscription(rctx, fc.Args["postId"].(string))
+		return ec.resolvers.Subscription().CommentsSubscription(rctx, fc.Args["postId"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3780,14 +3762,14 @@ func (ec *executionContext) unmarshalInputInputComment(ctx context.Context, obj 
 			it.Content = data
 		case "post":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("post"))
-			data, err := ec.unmarshalNID2string(ctx, v)
+			data, err := ec.unmarshalNID2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Post = data
 		case "replyTo":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("replyTo"))
-			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3805,7 +3787,7 @@ func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj any
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "content", "author", "commentsAllowed"}
+	fieldsInOrder := [...]string{"name", "content", "commentsAllowed"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3826,13 +3808,6 @@ func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj any
 				return it, err
 			}
 			it.Content = data
-		case "author":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("author"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Author = data
 		case "commentsAllowed":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commentsAllowed"))
 			data, err := ec.unmarshalNBoolean2bool(ctx, v)
@@ -4556,27 +4531,12 @@ func (ec *executionContext) marshalNComment2ᚖpostsᚋinternalᚋmodelᚐCommen
 }
 
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v any) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
+	res, err := graphql.UnmarshalIntID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+	res := graphql.MarshalIntID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4595,13 +4555,13 @@ func (ec *executionContext) unmarshalNInputPost2postsᚋinternalᚋmodelᚐInput
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {
-	res, err := graphql.UnmarshalInt32(v)
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.SelectionSet, v int32) graphql.Marshaler {
-	res := graphql.MarshalInt32(v)
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5028,7 +4988,7 @@ func (ec *executionContext) unmarshalOID2ᚖint(ctx context.Context, v any) (*in
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalInt(v)
+	res, err := graphql.UnmarshalIntID(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -5036,39 +4996,23 @@ func (ec *executionContext) marshalOID2ᚖint(ctx context.Context, sel ast.Selec
 	if v == nil {
 		return graphql.Null
 	}
+	res := graphql.MarshalIntID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
 	res := graphql.MarshalInt(*v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalID(*v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt32(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalInt32(*v)
 	return res
 }
 

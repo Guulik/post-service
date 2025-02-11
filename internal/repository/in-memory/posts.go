@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"database/sql"
 	"posts/internal/model"
 	"sync"
@@ -9,31 +10,29 @@ import (
 
 type PostsInMemory struct {
 	mu    sync.RWMutex
-	posts []model.Post
+	posts []*model.Post
 }
 
 func NewPostsInMemory(count int) *PostsInMemory {
 	return &PostsInMemory{
 
-		posts: make([]model.Post, 0, count),
+		posts: make([]*model.Post, 0, count),
 	}
 }
 
-func (p *PostsInMemory) CreatePost(post model.Post) (model.Post, error) {
+func (p *PostsInMemory) CreatePost(ctx context.Context, post model.Post) (model.Post, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	t := time.Now()
-
 	post.ID = len(p.posts) + 1
-	post.CreatedAt = t
+	post.CreatedAt = time.Now()
 
-	p.posts = append(p.posts, post)
+	p.posts = append(p.posts, &post)
 
 	return post, nil
 }
 
-func (p *PostsInMemory) GetPostById(id int) (model.Post, error) {
+func (p *PostsInMemory) GetPostById(ctx context.Context, id int) (model.Post, error) {
 
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -42,10 +41,10 @@ func (p *PostsInMemory) GetPostById(id int) (model.Post, error) {
 		return model.Post{}, sql.ErrNoRows
 	}
 
-	return p.posts[id-1], nil
+	return *p.posts[id-1], nil
 }
 
-func (p *PostsInMemory) GetAllPosts(limit, offset int) ([]model.Post, error) {
+func (p *PostsInMemory) GetAllPosts(ctx context.Context, limit, offset int) ([]*model.Post, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 

@@ -1,8 +1,8 @@
 package service
 
 import (
+	"context"
 	"posts/internal/constants"
-	"posts/internal/lib/pagination"
 	"posts/internal/model"
 	"posts/internal/repository"
 )
@@ -15,13 +15,13 @@ func NewPostsService(repo repository.Posts) *PostsService {
 	return &PostsService{repo: repo}
 }
 
-func (p PostsService) CreatePost(post model.Post) (model.Post, error) {
+func (p PostsService) CreatePost(ctx context.Context, post model.Post) (model.Post, error) {
 
 	if len(post.Content) >= constants.MaxContentLength {
 		//TODO: handle error
 	}
 
-	newPost, err := p.repo.CreatePost(post)
+	newPost, err := p.repo.CreatePost(ctx, post)
 	if err != nil {
 		//TODO: handle error
 	}
@@ -30,13 +30,12 @@ func (p PostsService) CreatePost(post model.Post) (model.Post, error) {
 
 }
 
-func (p PostsService) GetPostById(postId int) (model.Post, error) {
-
+func (p PostsService) GetPostById(ctx context.Context, postId int) (model.Post, error) {
 	if postId <= 0 {
 		//TODO: handle error
 	}
 
-	post, err := p.repo.GetPostById(postId)
+	post, err := p.repo.GetPostById(ctx, postId)
 	if err != nil {
 		//TODO: handle error
 	}
@@ -44,19 +43,9 @@ func (p PostsService) GetPostById(postId int) (model.Post, error) {
 	return post, nil
 }
 
-func (p PostsService) GetAllPosts(page, pageSize *int) ([]model.Post, error) {
+func (p PostsService) GetAllPosts(ctx context.Context, limit, offset int) ([]*model.Post, error) {
 
-	if page != nil && *page < 0 {
-		//TODO: handle error
-	}
-
-	if pageSize != nil && *pageSize < 0 {
-		//TODO: handle error
-	}
-
-	offset, limit := pagination.GetOffsetAndLimit(page, pageSize)
-
-	posts, err := p.repo.GetAllPosts(limit, offset)
+	posts, err := p.repo.GetAllPosts(ctx, limit, offset)
 	if err != nil {
 		//TODO: handle error
 	}

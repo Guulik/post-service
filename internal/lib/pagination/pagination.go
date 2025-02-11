@@ -1,6 +1,6 @@
 package pagination
 
-func GetOffsetAndLimit(page, pageSize *int) (int, int) {
+func GetLimitAndOffset(page, pageSize *int) (int, int) {
 	var (
 		limit  int
 		offset int

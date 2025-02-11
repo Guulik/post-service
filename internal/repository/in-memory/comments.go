@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"posts/internal/model"
 
 	"sync"
@@ -18,7 +19,7 @@ func NewCommentsInMemory(count int) *CommentsInMemory {
 	}
 }
 
-func (c *CommentsInMemory) CreateComment(comment model.Comment) (model.Comment, error) {
+func (c *CommentsInMemory) CreateComment(ctx context.Context, comment model.Comment) (model.Comment, error) {
 
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -34,7 +35,7 @@ func (c *CommentsInMemory) CreateComment(comment model.Comment) (model.Comment, 
 
 }
 
-func (c *CommentsInMemory) GetCommentsByPost(postId, limit, offset int) ([]*model.Comment, error) {
+func (c *CommentsInMemory) GetCommentsByPost(ctx context.Context, postId, limit, offset int) ([]*model.Comment, error) {
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -58,9 +59,7 @@ func (c *CommentsInMemory) GetCommentsByPost(postId, limit, offset int) ([]*mode
 	return res[offset : offset+limit], nil
 }
 
-func (c *CommentsInMemory) GetRepliesOfComment(commentId int, depth int32) ([]*model.Comment, error) {
-	//TODO: think about depth
-
+func (c *CommentsInMemory) GetRepliesOfComment(ctx context.Context, commentId int) ([]*model.Comment, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 

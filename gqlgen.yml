@@ -2,7 +2,7 @@
 schema:
   - graph/*.graphqls
 
-# Where should the generated server code go?
+# Where should the generated api code go?
 exec:
   package: graph
   layout: single-file # Only other option is "follow-schema," ie multi-file.
@@ -42,7 +42,7 @@ resolver:
   # filename: graph/resolver.go
 
   # Only for follow-schema layout:
-  dir: internal/server/graph
+  dir: internal/api/graph
   filename_template: "{name}.resolvers.go"
 
   # Optional: turn on to not generate template comments above resolvers
@@ -92,7 +92,7 @@ resolver:
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
 
-# Optional: set to skip running `go mod tidy` when generating server code
+# Optional: set to skip running `go mod tidy` when generating api code
 # skip_mod_tidy: true
 
 # Optional: if this is set to true, argument directives that
@@ -127,15 +127,16 @@ autobind:
 models:
   ID:
     model:
-      - github.com/99designs/gqlgen/graphql.ID
-      - github.com/99designs/gqlgen/graphql.Int
-      - github.com/99designs/gqlgen/graphql.Int64
-      - github.com/99designs/gqlgen/graphql.Int32
+      - github.com/99designs/gqlgen/graph.IntID
+      - github.com/99designs/gqlgen/graph.ID
+      - github.com/99designs/gqlgen/graph.Int
+      - github.com/99designs/gqlgen/graph.Int64
+      - github.com/99designs/gqlgen/graph.Int32
   # gqlgen provides a default GraphQL UUID convenience wrapper for github.com/google/uuid 
   # but you can override this to provide your own GraphQL UUID implementation
   UUID:
     model:
-      - github.com/99designs/gqlgen/graphql.UUID
+      - github.com/99designs/gqlgen/graph.UUID
 
   # The GraphQL spec explicitly states that the Int type is a signed 32-bit
   # integer. Using Go int or int64 to represent it can lead to unexpected
@@ -143,13 +144,13 @@ models:
   # communicating numbers that overflow 32-bits.
   #
   # You may choose to use the custom, built-in Int64 scalar to represent 64-bit
-  # integers, or ignore the spec and bind Int to graphql.Int / graphql.Int64
+  # integers, or ignore the spec and bind Int to graph.Int / graph.Int64
   # (the default behavior of gqlgen). This is fine in simple use cases when you
   # do not need to worry about interoperability and only expect small numbers.
   Int:
     model:
-      - github.com/99designs/gqlgen/graphql.Int32
+      - github.com/99designs/gqlgen/graph.Int
   Int64:
     model:
-      - github.com/99designs/gqlgen/graphql.Int
-      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graph.Int
+      - github.com/99designs/gqlgen/graph.Int64

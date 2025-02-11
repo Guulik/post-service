@@ -13,7 +13,7 @@ input InputComment{
 }
 
 extend type Query{
-    GetReplies(commentId: ID!, depth: Int!): [Comment!]
+    GetReplies(commentId: ID!): [Comment!]
 }
 
 extend type Mutation {

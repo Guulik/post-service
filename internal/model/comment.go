@@ -9,3 +9,11 @@ type Comment struct {
 	Post      int       `json:"post" db:"post"`
 	ReplyTo   *int      `json:"replyTo,omitempty" db:"reply_to"`
 }
+
+func (c InputComment) FromInput() Comment {
+	return Comment{
+		Content: c.Content,
+		Post:    c.Post,
+		ReplyTo: c.ReplyTo,
+	}
+}
