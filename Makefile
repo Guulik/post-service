@@ -12,6 +12,6 @@ down:
 stop:
 	docker-compose stop
 
-run-tests:
+test:
 	go test ./...
 
